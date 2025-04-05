@@ -5,6 +5,7 @@ from college_app.api.serializers import CustomPostSerializer, PostSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+from rest_framework import status
 
 
 @api_view()
@@ -30,18 +31,22 @@ def my_posts_list(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def create_post(request):
-    name = request.user.first_name
-    if (name==""):
-        request.data["posterName"] = "NULL"
-    else:
-        request.data["posterName"] = name
+    try:
+        name = request.user.first_name
+        if (name==""):
+            request.data["posterName"] = "NULL"
+        else:
+            request.data["posterName"] = name
         
-    serializer = PostSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    else:
-        return Response(serializer.errors)
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
+    except:
+        return Response({"message":"An Error Happened"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(["POST"])
@@ -55,7 +60,7 @@ def accept_post(request, pk):
         serializer = PostSerializer(post)
         return Response(serializer.data)
     except:
-        return Response({"message":"Not Found"})
+        return Response({"message":"Not Found"}, status=status.HTTP_404_NOT_FOUND)
     
     
 @api_view(["DELETE"])
@@ -67,5 +72,5 @@ def delete_post(request, pk):
         post.delete()
         return Response({"message":"Deleted Successfully"})
     except:
-        return Response({"message":"Not Found"})
+        return Response({"message":"Not Found"}, status=status.HTTP_404_NOT_FOUND)
         

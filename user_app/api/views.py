@@ -8,6 +8,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from rest_framework import status
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -20,7 +21,7 @@ class CustomAuthToken(ObtainAuthToken):
                 'token': token.key,
             })
         except:
-            return Response({"message": "An Error Happened"})
+            return Response({"message": "البيانات خاطئة"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(["POST"])
@@ -34,9 +35,10 @@ def registration_view(request):
             data["email"] = account.email
             token = Token.objects.get_or_create(user=account)[0].key
             data["token"] = token
-            return Response(data)
         else:
             data = serializer.errors
+        return Response(data)
+
     except:
-        return Response({"message":'An Error Happened'})
+        return Response({"message":'تم تسجيل هذا المستخدم مسبقاً'}, status=status.HTTP_401_UNAUTHORIZED)
     
