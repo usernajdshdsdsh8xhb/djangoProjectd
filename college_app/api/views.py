@@ -1,7 +1,7 @@
 
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from college_app.api.models import Post
-from college_app.api.serializers import CustomPostSerializer, PostSerializer
+from college_app.api.serializers import CustomPostSerializer, CustomTwoPostSerializer, PostSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -33,12 +33,17 @@ def my_posts_list(request):
 def create_post(request):
     try:
         name = request.user.first_name
+        telegramAccount = request.user.last_name
         if (name==""):
             request.data["posterName"] = "NULL"
         else:
             request.data["posterName"] = name
         
-        serializer = PostSerializer(data=request.data)
+        request.data["posterTelegram"] = telegramAccount
+        request.data["acceptorTelegram"] = ""
+
+        
+        serializer = CustomTwoPostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -56,6 +61,8 @@ def accept_post(request, pk):
     try:
         post = Post.objects.get(pk=pk)
         post.acceptorName = request.user.first_name
+        post.acceptorTelegram = request.user.last_name
+
         post.save()
         serializer = PostSerializer(post)
         return Response(serializer.data)

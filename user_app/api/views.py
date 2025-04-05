@@ -33,6 +33,8 @@ def registration_view(request):
             account = serializer.save()
             data["name"] = account.first_name
             data["email"] = account.email
+            data["telegramID"] = account.last_name
+
             token = Token.objects.get_or_create(user=account)[0].key
             data["token"] = token
         else:
